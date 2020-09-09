@@ -3,13 +3,13 @@
 # COMPLETE - Food to not spawn on top of snake
 # COMPLETE - Handler for turning 180 degrees 
 # COMPLETE - Trigger eat food as tick enters position instead of on leave
-# - Come up with nice tick rate progression for difficulty increase
-# - Snake to move through/past walls consistently
+# - Create tick rate progression for difficulty increase
+# COMPLETE - Snake to die when boundary hit
 # - Display controls down side of scene
 # - Display score on death
 # - Create menu
 # - Snake to spawn randomly with safe padding
-# - Add full notes
+# COMPLETE - Add full notes
 
 import os, time, queue, threading, random
 from platform import system
@@ -19,6 +19,7 @@ class Game:
     def __init__(self, height, width, refresh_rate):
         self.height = height
         self.width = width
+        self.matrix = []
         self.refresh_rate = refresh_rate
         self.state = 1
         self.snake = Snake([(3,1),(2,1),(1,1)],Snake.DOWN)
@@ -33,6 +34,7 @@ class Game:
             threading.Thread(target=self.listen, daemon=True).start()
             self.on_user()
             self.on_tick()
+            self.set_scene()
             self.render()
             time.sleep(self.refresh_rate)
 
@@ -42,7 +44,7 @@ class Game:
         # Check if new position contains food and eat
         # Check is snake had died
         clear_console()
-        self.snake.take_step()
+        self.snake.take_step(self.height, self.width)      
         if self.snake.body[0] == self.food.position:
             self.snake.body.insert(0, self.food.position)
             self.food.get_position(self.height, 
@@ -76,7 +78,6 @@ class Game:
         listener.start()
 
     def set_scene(self):
-        # Generate matrix of game elements
         # create game area array 
         self.matrix = [
             [
@@ -100,7 +101,7 @@ class Game:
         return self.matrix
 
     def render(self):
-        self.set_scene()
+        #print scene
         print(f"score: {self.score}")
         for y in range(self.height):
             print(*self.matrix[y])
@@ -118,22 +119,35 @@ class Snake:
         self.speed = 0.3
         self.life = 1
     
-    def take_step(self):
+    def take_step(self, height, width):
 
         next_position = (
             self.body[0][0] + self.direction[0],
             self.body[0][1] + self.direction[1])
 
+        # Check collisions body + borders
         i = 0
         for _ in self.body:
             if self.body[i] == next_position:
-                self.life = 0 
+                self.life -= 1 
             i += 1 
 
+        if next_position[1] == 0:
+            self.life -= 1 
+        elif next_position[1] == width - 1:
+            self.life -= 1
+        elif next_position[0] == 0:
+            self.life -= 1 
+        elif next_position[0] == height - 1:
+            self.life -= 1
+        else:
+            pass
+        # Add last body element to next position    
         self.body.pop()
         self.body.insert(0, next_position)
-              
+    
     def set_direction(self, direction):
+        # Check direction change isn't 180 then update
         if self.direction[0] + direction[0] == 0:
             pass
         elif self.direction[1] + direction[1] == 0:
@@ -145,9 +159,9 @@ class Food:
     def __init__(self, char, position):
         self.char = char
         self.position = position
-        self.state = 0
 
     def get_position(self, game_height, game_width, ignore):
+        # Generate food position and regen if on snak body
         i = 0
         while i == 0:
             self.position = (random.randint(1, game_height - 2),
@@ -163,9 +177,10 @@ class Food:
                 i = 1
 
 def clear_console():
-    # Clear screen as function of OS
+    # Clear console based on OS
     clear = 'cls' if system().lower()=='windows' else 'clear'
     os.system(clear)
 
-clear_console()
-Game(20, 30, 0.4).run()
+
+
+Game(20, 30, 0.2).run()
