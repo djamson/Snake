@@ -17,28 +17,28 @@ import os, time, queue, threading
 from platform import system
 
 class Game:
-    def __init__(self, height, width, refresh_rate):
+    def __init__(self, height, width, refresh_rate, difficulty):
         self.height = height
         self.width = width
-        self.matrix = []
         self.refresh_rate = refresh_rate
-        self.state = 1
         self.snake = el.Snake([(3,1),(2,1),(1,1)],el.Snake.DOWN)
         self.food = el.Food("*", (5, 5))
-        self.key_press = queue.LifoQueue()
         self.score = 0
+        self.difficulty = difficulty
 
     def run(self):
         # Start listener on to seperate thread to avoid blockin
         # Trigger order: user, tick, render, sleep * refer_rate
         threading.Thread(target=kb.listen, daemon=True).start()
         while True:
-            #threading.Thread(target=kb.listen, daemon=True).start()
+            tic = time.perf_counter()
             self.on_user()
             self.on_tick()
             self.set_scene()
             self.render()
-            time.sleep(self.refresh_rate)
+            toc = time.perf_counter()
+            tElapsed = toc - tic
+            time.sleep(self.refresh_rate - tElapsed)
 
     def on_tick(self):
         # Trigger on every tick @ refresh_rate
@@ -71,14 +71,6 @@ class Game:
             self.snake.set_direction(el.Snake.RIGHT)
         else:
             pass
-
-    def listen(self):
-        # Listen for user keyboard input
-        def on_press(key):
-            self.key_press = key
-            
-        listener = Listener(on_press=on_press)
-        listener.start()
 
     def set_scene(self):
         # create game area array 
@@ -116,4 +108,4 @@ def clear_console():
     os.system(clear)
 
 
-Game(20, 30, 0.2).run()
+Game(20, 30, 0.2, "normal").run()
