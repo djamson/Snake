@@ -30,5 +30,6 @@ import time
 def run():
     threading.Thread(target=kbpoller.listen, daemon=True).start()
     while True:
-        print("kbpoller.key")
+        print(kbpoller.key)
         time.sleep(2)
+

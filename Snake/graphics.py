@@ -5,7 +5,7 @@ class Menu_matrix():
         self.height = 20
         self.width = 30
 
-    def draw(self):
+    def draw_frame(self):
         self.matrix = [
             [
                 "-" if y == 0 or y == self.height - 1
@@ -24,7 +24,7 @@ class Game_matrix():
         self.height = height
         self.width = width
     
-    def draw(self):
+    def draw_frame(self):
         # create game area array 
         self.matrix = [
             [
