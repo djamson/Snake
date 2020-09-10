@@ -182,5 +182,4 @@ def clear_console():
     os.system(clear)
 
 
-
 Game(20, 30, 0.2).run()
